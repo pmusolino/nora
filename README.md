@@ -9,7 +9,7 @@
 <b> - To Be Published- </b>
 
 
-### How to use it
+## How to use it
 All you need is an Access Token from Instagram. I think it was this answer that I used to get it:
 https://stackoverflow.com/questions/16496511/how-to-get-an-instagram-access-token
 
@@ -22,6 +22,6 @@ struct InstagramSecret {
 
 Then you should be able to compile and use it ✌🏻😊
 
-### One more thing
+## One more thing
 You can do whatever you want with this project <b> as long </b> as the outcome is for free. <br />
 Meaning no commercial use. I want to provide value for free and try to maintain it 😉
