@@ -26,8 +26,15 @@ class HashtagSearchVC: UIViewController {
         tableView.dataSource = self
         searchBar.delegate = self
 
-        // Dismiss Keybaord if tapped anywhere in the view
-        self.view.addGestureRecognizer(UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing(_:))))
+        // Dismisses Keyboard if tapped anywhere in the view
+        let selector = #selector(UIView.endEditing(_:))
+        let gestureRecognizer = UITapGestureRecognizer(target: self.view, action: selector)
+
+        // Set to `false` because otherwise table cell touches
+        // are eaten by the gestureRecognizer
+        gestureRecognizer.cancelsTouchesInView = false
+
+        self.view.addGestureRecognizer(gestureRecognizer)
     }
 
     @IBAction func cancelButton(_ sender: Any) {
@@ -38,18 +45,20 @@ class HashtagSearchVC: UIViewController {
 // MARK: Searchbar
 
 extension HashtagSearchVC: UISearchBarDelegate {
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
             hashtagsOfSearchResult = []
+            self.tableView.reloadData()
         } else {
-            instagramClient.searchInstagram(for: searchText, completion: { (hashtagsSearchResult) in
-                self.hashtagsOfSearchResult = hashtagsSearchResult
+            instagramClient.searchInstagram(for: searchText, completion: { searchResult in
+                self.hashtagsOfSearchResult = searchResult
                 self.tableView.reloadData()
             })
         }
     }
 
-    // Dismisses Keyboard when hitting "done"
+    // Dismisses Keyboard when hitting "done".
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.endEditing(true)
     }
@@ -67,21 +76,41 @@ extension HashtagSearchVC: UITableViewDataSource, UITableViewDelegate {
         return hashtagsOfSearchResult.count
     }
 
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let hashtag = hashtagsOfSearchResult[indexPath.row]
+
+        if nil != hashtagsOfselectedGroup.first { $0.name == hashtag.name } {
+            hashtagsOfselectedGroup.removeAll(where: { $0.name == hashtag.name })
+        } else {
+            hashtagsOfselectedGroup.append(hashtag)
+        }
+
+        self.tableView.reloadData()
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         let cellIdentifier = "hashtagSearchCell"
         guard
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? HashtagSearchTableViewCell
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: cellIdentifier,
+                for: indexPath
+            ) as? HashtagSearchTableViewCell
         else {
-                fatalError("No cell with identifier 'HashtagGroup' found")
+            fatalError("No cell with identifier 'HashtagGroup' found")
         }
 
-        // Early return since "index out of range" occured once.
+        // Early return since "index out of range" once occured here.
         if hashtagsOfSearchResult.count <= indexPath.row {
             return cell
         }
 
         let hashtag = hashtagsOfSearchResult[indexPath.row]
+
+        // resetting the state because if it was `added` before
+        // and is not in the list `hashtagsOfselectedGroup` it won't
+        // gain the `none` state otherwise
+        hashtag.state = Hashtag.State.none
 
         if nil != hashtagsOfselectedGroup.first { $0.name == hashtag.name } {
             hashtag.state = Hashtag.State.added
