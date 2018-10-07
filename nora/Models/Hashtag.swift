@@ -11,10 +11,30 @@ final class Hashtag {
 }
 
 extension Hashtag {
-
     enum State: String {
         case none = ""
         case added
         case selected
+    }
+}
+
+extension Hashtag {
+    struct SearchResponse: Decodable {
+        let data: [SearchResponse.Data]
+        let meta: SearchResponse.Meta
+
+        struct Data: Decodable {
+            let name: String
+            let mediaCount: Int
+
+            enum CodingKeys: String, CodingKey {
+                case name
+                case mediaCount = "media_count"
+            }
+        }
+
+        struct Meta: Decodable {
+            let code: Double
+        }
     }
 }

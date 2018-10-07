@@ -7,9 +7,7 @@ final class InstagramClient {
         self.instagramRequestBuilder = IGRequestBuilder()
     }
 
-    /* TEMP INSTAGRAM FETCH */
     func searchInstagram(for hashtagName: String, completion: @escaping (_ hashtags: [Hashtag]) -> Void) {
-
         let searchHashtagRequest = instagramRequestBuilder.searchHashtag(by: hashtagName)
         let task = URLSession.shared.dataTask(with: searchHashtagRequest!) {(data, response, error) in
 
@@ -23,9 +21,9 @@ final class InstagramClient {
                 return
             }
 
-            var hashtagResponse: SearchHashtagResponse?
+            var hashtagResponse: Hashtag.SearchResponse?
             do {
-                hashtagResponse = try JSONDecoder().decode(SearchHashtagResponse.self, from: content)
+                hashtagResponse = try JSONDecoder().decode(Hashtag.SearchResponse.self, from: content)
             } catch {
                 print("cannot decode given data to HashtagResponse")
                 return
@@ -39,30 +37,8 @@ final class InstagramClient {
             DispatchQueue.main.async {
                 completion(hashtagsResult)
             }
-
-            // TEMP RESPONSE STRUCT //
-            struct SearchHashtagResponse: Decodable {
-                let data: [HashtagData]
-                let meta: HashtagMeta
-
-                struct HashtagData: Decodable {
-                    let name: String
-                    let mediaCount: Int
-
-                    enum CodingKeys: String, CodingKey {
-                        case name
-                        case mediaCount = "media_count"
-                    }
-                }
-
-                struct HashtagMeta: Decodable {
-                    let code: Double
-                }
-            }
-            // TEMP RESPONSE STRUCT //
         }
 
         task.resume()
     }
-    /* TEMP INSTAGRAM FETCH */
 }
