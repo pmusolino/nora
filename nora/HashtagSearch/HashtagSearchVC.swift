@@ -8,85 +8,56 @@
 
 import UIKit
 
-class HashtagSearchVC: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class HashtagSearchVC: UIViewController {
 
     // MARK: Properties
 
     var hashtagsOfSearchResult = [Hashtag]()
     var hashtagsOfselectedGroup = [Hashtag]()
+    let instagramClient = InstagramClient()
 
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var searchBar: UISearchBar!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.delegate = self
         tableView.dataSource = self
+        searchBar.delegate = self
 
-        // Mock search results
-        //loadSampleSearchResult()
-        fetchJSON()
+        // Dismiss Keybaord if tapped anywhere in the view
+        self.view.addGestureRecognizer(UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing(_:))))
     }
 
-    /* TEMP INSTAGRAM FETCH */
-    func fetchJSON() {
-        //let singleHashtagRequest = URL(string: "https://api.instagram.com/v1/tags/web?access_token=10470869.877f3d1.50a1b3efdc6b40f08ded0757e169bbd5")
-        let searchHashtagRequest = URL(string: "https://api.instagram.com/v1/tags/search?q=web&access_token=\(InstagramSecret.accessToken)")
+    @IBAction func cancelButton(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil)
+    }
+}
 
-        let task = URLSession.shared.dataTask(with: searchHashtagRequest!) {(data, response, error) in
+// MARK: Searchbar
 
-            guard error == nil else {
-                print("error")
-                return
-            }
-
-            guard let content = data else {
-                print("no data")
-                return
-            }
-
-            var hashtagResponse: SearchHashtagResponse?
-            do {
-                hashtagResponse = try JSONDecoder().decode(SearchHashtagResponse.self, from: content)
-            } catch {
-                print("cannot decode given data to HashtagResponse")
-                return
-            }
-
-            if let resp = hashtagResponse {
-                let hshtgs = resp.data.map { Hashtag(name: $0.name, usages: $0.mediaCount) }
-                self.hashtagsOfSearchResult = hshtgs
-            }
-
-            // TEMP RESPONSE STRUCT //
-            struct SearchHashtagResponse: Decodable {
-                let data: [HashtagData]
-                let meta: HashtagMeta
-
-                struct HashtagData: Decodable {
-                    let name: String
-                    let mediaCount: Int
-
-                    enum CodingKeys: String, CodingKey {
-                        case name
-                        case mediaCount = "media_count"
-                    }
-                }
-
-                struct HashtagMeta: Decodable {
-                    let code: Double
-                }
-            }
-            // TEMP RESPONSE STRUCT //
-
-            DispatchQueue.main.async {
+extension HashtagSearchVC: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            hashtagsOfSearchResult = []
+        } else {
+            instagramClient.searchInstagram(for: searchText, completion: { (hashtagsSearchResult) in
+                self.hashtagsOfSearchResult = hashtagsSearchResult
                 self.tableView.reloadData()
-            }
+            })
         }
-
-        task.resume()
     }
-    /* TEMP INSTAGRAM FETCH */
+
+    // Dismisses Keyboard when hitting "done"
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.endEditing(true)
+    }
+}
+
+// MARK: Tableview
+
+extension HashtagSearchVC: UITableViewDataSource, UITableViewDelegate {
 
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -102,7 +73,12 @@ class HashtagSearchVC: UIViewController, UITableViewDataSource, UITableViewDeleg
         guard
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? HashtagSearchTableViewCell
         else {
-            fatalError("No cell with identifier 'HashtagGroup' found")
+                fatalError("No cell with identifier 'HashtagGroup' found")
+        }
+
+        // Early return since "index out of range" occured once.
+        if hashtagsOfSearchResult.count <= indexPath.row {
+            return cell
         }
 
         let hashtag = hashtagsOfSearchResult[indexPath.row]
@@ -116,19 +92,5 @@ class HashtagSearchVC: UIViewController, UITableViewDataSource, UITableViewDeleg
         cell.hashtagSearchStateLabel.text = hashtag.state.rawValue
 
         return cell
-    }
-
-    @IBAction func cancelButton(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
-    }
-
-    func loadSampleSearchResult() {
-        hashtagsOfSearchResult = [
-            Hashtag(name: "web", usages: 72834),
-            Hashtag(name: "programming", usages: 92180),
-            Hashtag(name: "coding", usages: 1374656),
-            Hashtag(name: "webdevelopment", usages: 122823),
-            Hashtag(name: "coder", usages: 23474),
-        ]
     }
 }

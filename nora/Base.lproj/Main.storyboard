@@ -180,7 +180,7 @@
                             </navigationBar>
                             <searchBar contentMode="redraw" searchBarStyle="minimal" translatesAutoresizingMaskIntoConstraints="NO" id="jKI-LD-wlV">
                                 <rect key="frame" x="0.0" y="64" width="375" height="56"/>
-                                <textInputTraits key="textInputTraits" keyboardAppearance="alert"/>
+                                <textInputTraits key="textInputTraits" keyboardAppearance="alert" returnKeyType="done"/>
                             </searchBar>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="40" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="f2l-xP-Slg">
                                 <rect key="frame" x="0.0" y="120" width="375" height="547"/>
@@ -257,6 +257,7 @@
                         <barButtonItem key="rightBarButtonItem" systemItem="save" id="EJr-p8-1S1"/>
                     </navigationItem>
                     <connections>
+                        <outlet property="searchBar" destination="jKI-LD-wlV" id="gxW-N6-RQm"/>
                         <outlet property="tableView" destination="f2l-xP-Slg" id="rhv-bf-SqQ"/>
                     </connections>
                 </viewController>
