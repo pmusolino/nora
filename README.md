@@ -5,11 +5,11 @@
   Create groups according to your niche on Instagram and manage your hashtags
 </p>
 
-## Download it for free from the App Store
+## Download the App for free from the App Store
 <b> - To Be Published- </b>
 
 
-## How to use it
+## Downlaod the project and compile it on your machine
 All you need is an Access Token from Instagram. I think it was this answer that I used to get it:
 https://stackoverflow.com/questions/16496511/how-to-get-an-instagram-access-token
 
